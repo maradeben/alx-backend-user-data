@@ -11,11 +11,14 @@ class Auth:
         """ determine paths requiring auth """
         if path is None or excluded_paths is None or excluded_paths == []:
             return True
-        path+='/' if not path.endswith('/') else ''
+        path += '/' if not path.endswith('/') else ''
+        # return True if path is not path of the excluded
         return path not in excluded_paths
 
     def authorization_header(self, request=None) -> str:
         """ return None for starters """
+        if request is not None:
+            return request.headers.get('Authorization', None)
         return None
 
     def current_user(self, request=None) -> TypeVar('User'):
