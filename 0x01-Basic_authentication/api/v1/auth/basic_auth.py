@@ -41,7 +41,7 @@ class BasicAuth(Auth):
                 ':' in decoded_base64_authorization_header:
             email, password = decoded_base64_authorization_header.split(':')
             return email, password
-        return None
+        return None, None
 
     def user_object_from_credentials(self, user_email: str, user_pwd: str
                                      ) -> TypeVar('User'):
@@ -49,9 +49,20 @@ class BasicAuth(Auth):
         if user_email is None or not isinstance(user_email, str)\
                 or user_pwd is None or not isinstance(user_pwd, str):
             return None
-        user = User.search({"email": user_email})
+        try:
+            user = User.search({"email": user_email})
+        except Exception:
+            return None
         if user == []:
             return None
         else:
             user = user[0]
         return user if user.is_valid_password(user_pwd) else None
+
+    def current_user(self, request=None) -> TypeVar('User'):
+        """ overload parent's current user to retrieve user instance """
+        auth_header = self.authorization_header(request)
+        auth_header = self.extract_base64_authorization_header(auth_header)
+        decoded_auth = self.decode_base64_authorization_header(auth_header)
+        email, password = self.extract_user_credentials(decoded_auth)
+        return self.user_object_from_credentials(email, password)
