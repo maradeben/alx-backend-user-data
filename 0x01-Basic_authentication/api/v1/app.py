@@ -18,6 +18,7 @@ auth_type = getenv('AUTH_TYPE', 'auth')
 if auth_type == 'auth':
     auth = Auth()
 
+
 @app.errorhandler(404)
 def not_found(error) -> str:
     """ Not found handler
@@ -40,15 +41,15 @@ def forbidden(error) -> str:
 @app.before_request
 def filter_request_auth():
     """ filter requests for which requires auth """
-    if auth == None:
+    if auth is None:
         return
-    excluded = ['/api/v1/status/', '/api/v1/unauthorized/', '/api/v1/forbidden/']
+    excluded = ['/api/v1/status/', '/api/v1/unauthorized/',
+                '/api/v1/forbidden/']
     if auth.require_auth(request.path, excluded):
-        return
-    if auth.authorization_header(request) is None:
-        abort(401)
-    if auth.current_user(request) is None:
-        abort(403)
+        if auth.authorization_header(request) is None:
+            abort(401)
+        if auth.current_user(request) is None:
+            abort(403)
 
 
 if __name__ == "__main__":
