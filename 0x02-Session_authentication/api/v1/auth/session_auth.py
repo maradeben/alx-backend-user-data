@@ -3,11 +3,12 @@
 from api.v1.auth.auth import Auth
 import uuid
 
+
 class SessionAuth(Auth):
     """ The session auth class """
 
     user_id_by_session_id = {}
-    
+
     def create_session(self, user_id: str = None) -> str:
         """ create session id for a user id """
 
