@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ set up basic flask app """
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect
 from auth import Auth
 from typing import Union
 
@@ -76,7 +76,7 @@ def get_reset_password_token() -> str:
     except ValueError:
         abort(403)
 
-    return jsonify({"message": email, "reset_token": token}) 200
+    return jsonify({"message": email, "reset_token": token}), 200
 
 
 @app.route("/reset_password", methods=['PUT'], strict_slashes=False)
