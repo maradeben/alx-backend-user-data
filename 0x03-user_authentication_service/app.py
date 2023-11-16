@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ set up basic flask app """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from auth import Auth
 from typing import Union
 
@@ -28,6 +28,31 @@ def users() -> Union[str, tuple]:
     else:
         return jsonify({"email": "{}".format(email),
                        "message": "user created"})
+
+
+@app.route("/sessions", methods=['POST'], strict_slashes=False)
+def login() -> Union[str, tuple]:
+    """ create a session """
+    email = request.form['email']
+    password = request.form['password']
+
+    if not AUTH.valid_login(email, password):
+        abort(401)
+    sess_id = AUTH.create_session(email)
+    resp = jsonify({"email": email, "message": "logged in"})
+    resp.set_cookie("session_id", sess_id)
+    return resp
+
+
+@app.route("/sessions", methods=['DELETE'], strict_slashes=False)
+def logout() -> Union[str, tuple]:
+    """ implement logout """
+    session_id = request.cookies.get('session_id', None)
+    user = AUTH.get_user_from_session_id(session_id)
+    if session_id is None or user is None:
+        abort(403)
+    AUTH.destroy_session(user.id)
+    return redirect('/')
 
 
 if __name__ == "__main__":

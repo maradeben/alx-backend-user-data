@@ -4,6 +4,7 @@ import bcrypt
 from db import DB
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
+from user import User
 
 
 def _hash_password(password: str) -> bytes:
@@ -48,7 +49,6 @@ class Auth:
         except NoResultFound:
             return False
 
-        user_password = user.hashed_password
         if bcrypt.checkpw(password.encode(), user.hashed_password):
             return True
         return False
@@ -64,3 +64,26 @@ class Auth:
         sess_id = _generate_uuid()
         self._db.update_user(user.id, session_id=sess_id)
         return sess_id
+
+    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
+        """ get user from session_id """
+        if session_id is None:
+            return None
+        try:
+            user = self._db.find_user_by(session_id=session_id)
+        except NoResultFound:
+            return None
+        else:
+            return user
+
+    def destroy_session(self, user_id: str) -> None:
+        """ destroy a session """
+        if user_id is None:
+            return
+        try:
+            user = self._db.find_user_by(id=user_id)
+        except NoResultFound:
+            return
+        else:
+            self._db.update_user(user_id, session_id=None)
+            return None
