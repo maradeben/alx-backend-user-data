@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchecy.exc import InvalidRequestErros
+from sqlalchemy.exc import InvalidRequestError
 from user import Base, User
 
 
@@ -56,3 +56,16 @@ class DB:
             raise NoResultFound
 
         return user
+
+    def update_user(self, user_id, **kwargs: dict) -> User:
+        """ update user by given kwargs """
+        user = self.find_user_by(id=user_id)
+        fields = User.__table__.columns.keys()
+        for arg in kwargs.keys():
+            if arg not in fields:
+                raise ValueError
+
+        for key, value in kwargs.items():
+            setattr(user, key, value)
+
+        self._session.commit()
